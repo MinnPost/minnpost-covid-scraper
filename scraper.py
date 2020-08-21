@@ -6,6 +6,8 @@ import datetime
 
 app = Flask(__name__)
 
+decades_crosswalk = {"0-4 years": "0-9 years", "5-9 years": "0-9 years", "10-14 years": "10-19 years", "15-19 years": "10-19 years", "20-24 years": "20-29 years", "25-29 years": "20-29 years", "30-34 years": "30-39 years", "35-39 years": "30-39 years", "40-44 years": "40-49 years", "45-49 years": "40-49 years", "50-54 years": "50-59 years", "55-59 years": "50-59 years", "60-64 years": "60-69 years", "65-69 years": "60-69 years", "70-74 years": "70-79 years", "75-79 years": "70-79 years", "80-84 years": "80-89 years", "85-89 years": "80-89 years", "90-94 years": "90-99 years", "95-99 years": "90-99 years", "100+ years": "100+ years"}
+
 def APify(num_string):
   num_string = str(num_string)
   nums = {"1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine"}
@@ -30,7 +32,7 @@ def scrape_covid_data():
   for row in daily_deaths_table.find_all("tr"):
     entries = row.find_all("td")
     if entries:
-      age_range = entries[1].get_text().strip()
+      age_range = decades_crosswalk[entries[1].get_text().strip()]
       death_count = int(entries[2].get_text().strip())
       if age_range in deaths_by_age:
         deaths_by_age[age_range] += death_count
