@@ -58,13 +58,14 @@ def scrape_covid_data():
   dailytests = int(mdhtests.replace(",","")) + int(privatetests.replace(",",""))
   dailytests = "{:,}".format(dailytests)
 
-  #get all hospital data
+  #get hospital data
   hospital_details_table = soup.find(id="hosptable")
   rows = hospital_details_table.find_all("tr")
   cells = rows[-2].find_all("td")
   icu = cells[1].get_text()
   non_icu = cells[2].get_text()
-  print(icu, non_icu)
+  total_hospital = rows[-1].find_all("td")[3].get_text()
+  total_icu = rows[-1].find_all("td")[4].get_text()
 
   #get all the list items so we can try to find specific info
   list_items = soup.find_all("li")
@@ -96,6 +97,8 @@ def scrape_covid_data():
     "total_tests": totaltests,
     "hospital_icu": icu,
     "hospital_non_icu": non_icu,
+    "total_hospital": total_hospital,
+    "total_icu": total_icu,
     "recovered": recovered
   }
 
