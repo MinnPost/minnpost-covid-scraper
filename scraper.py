@@ -61,8 +61,12 @@ def scrape_full_test_history():
     cells = row.find_all("td")
     raw_date = cells[0].get_text().strip().split("/")
     month = raw_date[0]
-    day = raw_date[1] 
-    formatted_date = "2020-{}-{}".format(month, day)
+    day = raw_date[1]
+
+    data_received_date = datetime.date(year=2020, month=int(month), day=int(day))
+    data_reported_date = data_received_date + datetime.timedelta(days=1)
+
+    formatted_date = "2020-{}-{}".format(data_reported_date.month, data_reported_date.day)
     
     total_tests = int(cells[-1].get_text().strip().replace(",",""))
     new_tests = total_tests - previous_day_total
