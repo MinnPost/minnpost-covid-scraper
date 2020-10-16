@@ -47,11 +47,35 @@ def scrape_spreadsheet_row():
   return {"total_cases": total_cases, "new_deaths": new_deaths, "total_tests": total_tests, "new_cases": new_cases, "new_tests": new_tests, "date": date, "time": time}
 
 def scrape_full_test_history():
-  pass
+  r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
+  text = r.text
+  soup = BeautifulSoup(text, "html.parser")
+
+  new_tests_by_day = []
+
+  test_history_table = soup.find(id="labtable")
+  rows = test_history_table.find_all("tr")
+  previous_day_total = int(rows[1].find_all("td")[-1].get_text().strip().replace(",",""))
+  for row in rows[2:]: #skip header row and first row of data
+    cells = row.find_all("td")
+    raw_date = cells[0].get_text().strip().split("/")
+    month = raw_date[0]
+    day = raw_date[1] 
+    formatted_date = "2020-{}-{}".format(month, day)
+    
+    total_tests = int(cells[-1].get_text().strip().replace(",",""))
+    new_tests = total_tests - previous_day_total
+
+    previous_day_total = total_tests
+
+    new_tests_by_day.append([formatted_date, new_tests])
+
+  return new_tests_by_day
 
 @app.route("/spreadsheet")
 def spreadsheet_row():
   return render_template("spreadsheet-row.html", data = scrape_spreadsheet_row())
 
 if __name__ == '__main__':
-  app.run()
+  #app.run()
+  print(scrape_full_test_history())
