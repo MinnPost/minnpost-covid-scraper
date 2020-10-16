@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import datetime
+import json
 
 app = Flask(__name__)
 
@@ -76,6 +77,9 @@ def scrape_full_test_history():
 def spreadsheet_row():
   return render_template("spreadsheet-row.html", data = scrape_spreadsheet_row())
 
+@app.route("/daily-test-data")
+def daily_test_data():
+  return json.dumps(scrape_full_test_history())
+
 if __name__ == '__main__':
-  #app.run()
-  print(scrape_full_test_history())
+  app.run()
