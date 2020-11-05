@@ -77,6 +77,25 @@ def scrape_full_test_history():
 
   return new_tests_by_day
 
+def scrape_daily_county_totals():
+  r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
+  text = r.text
+  soup = BeautifulSoup(text, "html.parser")
+
+  county_data = {}
+
+  county_id = {"Aitkin": "aitkin", "Anoka": "anoka", "Becker": "becker", "Beltrami": "beltrami", "Benton": "benton", "Big Stone": "bigstone", "Blue Earth": "blueearth", "Brown": "brown", "Carlton": "carlton", "Carver": "carver", "Cass": "cass", "Chippewa": "chippewa", "Chisago": "chisago", "Clay": "clay", "Clearwater": "clearwater", "Cook": "cook", "Cottonwood": "cottonwood", "Crow Wing": "crowwing", "Dakota": "dakota", "Dodge": "dodge", "Douglas": "douglas", "Faribault": "faribault", "Fillmore": "fillmore", "Freeborn": "freeborn", "Goodhue": "goodhue", "Grant": "grant", "Hennepin": "hennepin", "Houston": "houston", "Hubbard": "hubbard", "Isanti": "isanti", "Itasca": "itasca", "Jackson": "jackson", "Kanabec": "kanabec", "Kandiyohi": "kandiyohi", "Kittson": "kittson", "Koochiching": "koochiching", "Lac qui Parle": "lacquiparle", "Lake": "lake", "Lake of the Woods": "lakeofthewoods", "Le Sueur": "lesueur", "Lincoln": "lincoln", "Lyon": "lyon", "McLeod": "mcleod", "Mahnomen": "mahnomen", "Marshall": "marshall", "Martin": "martin", "Meeker": "meeker", "Mille Lacs": "millelacs", "Morrison": "morrison", "Mower": "mower", "Murray": "murray", "Nicollet": "nicollet", "Nobles": "nobles", "Norman": "norman", "Olmsted": "olmsted", "Otter Tail": "ottertail", "Pennington": "pennington", "Pine": "pine", "Pipestone": "pipestone", "Polk": "polk", "Pope": "pope", "Ramsey": "ramsey", "Red Lake": "redlake", "Redwood": "redwood", "Renville": "renville", "Rice": "rice", "Rock": "rock", "Roseau": "roseau", "St. Louis": "saintlouis", "Scott": "scott", "Sherburne": "sherburne", "Sibley": "sibley", "Stearns": "stearns", "Steele": "steele", "Stevens": "stevens", "Swift": "swift", "Todd": "todd", "Traverse": "traverse", "Wabasha": "wabasha", "Wadena": "wadena", "Waseca": "waseca", "Washington": "washington", "Watonwan": "watonwan", "Wilkin": "wilkin", "Winona": "winona", "Wright": "wright", "Yellow Medicine": "yellowmedicine", "Unknown/missing": "unknown"}
+
+  county_table = soup.find(id="maptable")
+  rows = county_table.find_all("tr")
+  for row in rows[1:]: #skipping header row
+    cells = row.find_all("td")
+    county = county_id[cells[0].get_text().strip()]
+    cases = int(cells[1].get_text().strip().replace(",",""))
+    county_data[county] = cases
+
+  return county_data
+
 @app.route("/spreadsheet")
 def spreadsheet_row():
   return render_template("spreadsheet-row.html", data = scrape_spreadsheet_row())
@@ -84,6 +103,10 @@ def spreadsheet_row():
 @app.route("/daily-test-data")
 def daily_test_data():
   return json.dumps(scrape_full_test_history())
+
+@app.route("/county-data")
+def get_county_data():
+  return json.dumps(scrape_daily_county_totals())
 
 if __name__ == '__main__':
   app.run()
