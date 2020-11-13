@@ -7,6 +7,13 @@ import json
 
 app = Flask(__name__)
 
+def APify(num_string):
+  num_string = str(num_string)
+  nums = {"1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine"}
+  if len(num_string) == 1:
+    num_string = nums[num_string]
+  return num_string
+
 def get_daily_change(column_name, today_data):
   r = requests.get("https://spreadsheets.google.com/feeds/list/121YfyOnxak30lhjdVZCaIE40LBZdamIT1nxev8z3Ck4/1/public/full?alt=json")
   data = r.json()["feed"]["entry"]
@@ -30,6 +37,20 @@ def scrape_spreadsheet_row():
   cells = dailydeathtotal_table.find_all("td")
   new_deaths = int(cells[0].get_text().strip().replace(",",""))
 
+  #long term care deaths
+  ltc_re = re.compile("Long-term care facility/Assisted living")
+  death_residence_table = soup.find(id="dailydeathrt")
+  rows = death_residence_table.find_all("tr")
+  for row in rows[1:]:
+    cells = row.find_all("td")
+    if ltc_re.match(cells[0].get_text()):
+      new_ltc_deaths = int(cells[1].get_text().strip().replace(",",""))
+
+  #total deaths
+  death_table = soup.find(id="deathtotal")
+  rows = death_table.find_all("tr")
+  total_deaths = int(rows[0].find_all("td")[0].get_text().strip().replace(",", ""))
+
   #total tests
   testtotal_table = soup.find(id="testtotal")
   cells = testtotal_table.find_all("td")
@@ -45,7 +66,7 @@ def scrape_spreadsheet_row():
   date = datetime.datetime.now().strftime("%-m/%-d/%Y")
   time = datetime.datetime.now().strftime("%-I:%M %p")
 
-  return {"total_cases": total_cases, "new_deaths": new_deaths, "total_tests": total_tests, "new_cases": new_cases, "new_tests": new_tests, "date": date, "time": time}
+  return {"total_cases": total_cases, "new_deaths": new_deaths, "new_ltc_deaths": new_ltc_deaths, "total_deaths": total_deaths, "total_tests": total_tests, "new_cases": new_cases, "new_tests": new_tests, "date": date, "time": time}
 
 def scrape_full_test_history():
   r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
@@ -96,6 +117,50 @@ def scrape_daily_county_totals():
 
   return county_data
 
+def were_was(num):
+  if num == 1:
+    return "was"
+  return "were"
+
+def format_ages_sentence_fragment(age_groups):
+  age_order = ["100","90","80","70","60","50","40","30","20","10"]
+  s = ""
+  sentence_parts = []
+  for age in age_order:
+    for group in age_groups:
+      if age == group:
+        if age == "100":
+          sentence_parts.append("{} {} over 100 years old".format(APify(age_groups[group]), were_was(age_groups[group])))
+        else:
+          sentence_parts.append("{} {} in their {}s".format(APify(age_groups[group]), were_was(age_groups[group]), age))
+  s += ", ".join(sentence_parts[0:-1])
+  s += " and " + sentence_parts[-1]
+  return s
+
+def scrape_death_ages():
+  r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
+  text = r.text
+  soup = BeautifulSoup(text, "html.parser")
+
+  deaths_by_age_decade = {}
+
+  new_deaths_table = soup.find(id="dailydeathar")
+  rows = new_deaths_table.find_all("tr")
+
+  decade_re = re.compile("(\d?\d)\d")
+
+  for row in rows[1:]: #skipping header row
+    cells = row.find_all("td")
+    age_range = cells[1].get_text().strip()
+    decade = decade_re.match(age_range).group(0)[:-1]+"0"
+    count = cells[2].get_text().strip().replace(",","")
+    if decade in deaths_by_age_decade:
+      deaths_by_age_decade[decade] += int(count)
+    else:
+      deaths_by_age_decade[decade] = int(count)
+
+  return deaths_by_age_decade
+
 @app.route("/spreadsheet")
 def spreadsheet_row():
   return render_template("spreadsheet-row.html", data = scrape_spreadsheet_row())
@@ -107,6 +172,19 @@ def daily_test_data():
 @app.route("/county-data")
 def get_county_data():
   return json.dumps(scrape_daily_county_totals())
+
+@app.route("/daily-update")
+def daily_update():
+  data = scrape_spreadsheet_row()
+  data["date"] = datetime.datetime.now().strftime("%B %-d")
+  data["day_of_week"] = datetime.datetime.now().strftime("%A")
+  yesterday = datetime.date.today() - datetime.timedelta(days=1)
+  data["yesterday_of_week"] = yesterday.strftime("%A")
+  data["age_groups_sentence_fragment"] = format_ages_sentence_fragment(scrape_death_ages())
+  for k in data: #add commas to numbers
+    if isinstance(data[k], int):
+      data[k] = "{:,}".format(data[k]) 
+  return render_template("update-new.html", data=data)
 
 if __name__ == '__main__':
   app.run()
