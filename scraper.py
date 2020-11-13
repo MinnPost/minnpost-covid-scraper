@@ -176,6 +176,7 @@ def get_county_data():
 @app.route("/daily-update")
 def daily_update():
   data = scrape_spreadsheet_row()
+  data["new_tests"] = scrape_full_test_history()[-1][1]
   data["date"] = datetime.datetime.now().strftime("%B %-d")
   data["day_of_week"] = datetime.datetime.now().strftime("%A")
   yesterday = datetime.date.today() - datetime.timedelta(days=1)
