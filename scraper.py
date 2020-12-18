@@ -43,8 +43,9 @@ def scrape_spreadsheet_row():
   rows = death_residence_table.find_all("tr")
   for row in rows[1:]:
     cells = row.find_all("td")
-    if ltc_re.match(cells[0].get_text()):
-      new_ltc_deaths = int(cells[1].get_text().strip().replace(",",""))
+    if cells:
+      if ltc_re.match(cells[0].get_text()):
+        new_ltc_deaths = int(cells[1].get_text().strip().replace(",",""))
 
   #total deaths
   death_table = soup.find(id="deathtotal")
