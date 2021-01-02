@@ -79,13 +79,21 @@ def scrape_full_test_history():
   test_history_table = soup.find(id="labtable")
   rows = test_history_table.find_all("tr")
   previous_day_total = int(rows[1].find_all("td")[-1].get_text().strip().replace(",",""))
+
+  year = 2020
+  year_incremented = False
+
   for row in rows[2:]: #skip header row and first row of data
     cells = row.find_all("td")
     raw_date = cells[0].get_text().strip().split("/")
     month = raw_date[0]
     day = raw_date[1]
 
-    data_received_date = datetime.date(year=2020, month=int(month), day=int(day))
+    if month == 1 and not year_incremented:
+      year += 1
+      year_incremented = True
+
+    data_received_date = datetime.date(year=year, month=int(month), day=int(day))
     data_reported_date = data_received_date + datetime.timedelta(days=1)
 
     formatted_date = "{}-{}-{}".format(data_reported_date.year, data_reported_date.month, data_reported_date.day)
