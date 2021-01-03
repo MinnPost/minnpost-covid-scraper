@@ -89,8 +89,8 @@ def scrape_full_test_history():
     month = raw_date[0]
     day = raw_date[1]
 
-    if month == 1 and not year_incremented:
-      year += 1
+    if month == "1":
+      year = 2021
       year_incremented = True
 
     data_received_date = datetime.date(year=year, month=int(month), day=int(day))
