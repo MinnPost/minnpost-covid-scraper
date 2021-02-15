@@ -38,6 +38,7 @@ def scrape_spreadsheet_row():
   new_deaths = int(cells[0].get_text().strip().replace(",",""))
 
   #long term care deaths
+  new_ltc_deaths = 0
   ltc_re = re.compile("Long-term care facility/Assisted living")
   death_residence_table = soup.find(id="dailydeathrt")
   rows = death_residence_table.find_all("tr")
