@@ -39,7 +39,7 @@ def scrape_spreadsheet_row():
 
   #long term care deaths
   new_ltc_deaths = 0
-  ltc_re = re.compile("Long-term care facility/Assisted living")
+  ltc_re = re.compile("Long-term [Cc]are [Ff]acility/Assisted [Ll]iving")
   death_residence_table = soup.find(id="dailydeathrt")
   rows = death_residence_table.find_all("tr")
   for row in rows[1:]:
