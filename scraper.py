@@ -143,8 +143,13 @@ def format_ages_sentence_fragment(age_groups):
           sentence_parts.append("{} {} over 100 years old".format(APify(age_groups[group]), were_was(age_groups[group])))
         else:
           sentence_parts.append("{} {} in their {}s".format(APify(age_groups[group]), were_was(age_groups[group]), age))
-  s += ", ".join(sentence_parts[0:-1])
-  s += " and " + sentence_parts[-1]
+  if len(sentence_parts) > 1:
+    s += ", ".join(sentence_parts[0:-1])
+    s += " and " + sentence_parts[-1]
+  elif len(sentence_parts) == 1:
+    s = sentence_parts[0]
+  else:
+    s = ""
   return s
 
 def scrape_death_ages():
@@ -168,7 +173,6 @@ def scrape_death_ages():
       deaths_by_age_decade[decade] += int(count)
     else:
       deaths_by_age_decade[decade] = int(count)
-
   return deaths_by_age_decade
 
 @app.route("/spreadsheet")
