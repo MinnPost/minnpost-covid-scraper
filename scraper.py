@@ -41,12 +41,13 @@ def scrape_spreadsheet_row():
   new_ltc_deaths = 0
   ltc_re = re.compile("Long-term [Cc]are [Ff]acility/Assisted [Ll]iving")
   death_residence_table = soup.find(id="dailydeathrt")
-  rows = death_residence_table.find_all("tr")
-  for row in rows[1:]:
-    cells = row.find_all("td")
-    if cells:
-      if ltc_re.match(cells[0].get_text()):
-        new_ltc_deaths = int(cells[1].get_text().strip().replace(",",""))
+  if death_residence_table:
+    rows = death_residence_table.find_all("tr")
+    for row in rows[1:]:
+      cells = row.find_all("td")
+      if cells:
+        if ltc_re.match(cells[0].get_text()):
+          new_ltc_deaths = int(cells[1].get_text().strip().replace(",",""))
 
   #total deaths
   death_table = soup.find(id="deathtotal")
@@ -160,19 +161,20 @@ def scrape_death_ages():
   deaths_by_age_decade = {}
 
   new_deaths_table = soup.find(id="dailydeathar")
-  rows = new_deaths_table.find_all("tr")
+  if new_deaths_table:
+    rows = new_deaths_table.find_all("tr")
 
-  decade_re = re.compile("(\d?\d)\d")
+    decade_re = re.compile("(\d?\d)\d")
 
-  for row in rows[1:]: #skipping header row
-    cells = row.find_all("td")
-    age_range = cells[1].get_text().strip()
-    decade = decade_re.match(age_range).group(0)[:-1]+"0"
-    count = cells[2].get_text().strip().replace(",","")
-    if decade in deaths_by_age_decade:
-      deaths_by_age_decade[decade] += int(count)
-    else:
-      deaths_by_age_decade[decade] = int(count)
+    for row in rows[1:]: #skipping header row
+      cells = row.find_all("td")
+      age_range = cells[1].get_text().strip()
+      decade = decade_re.match(age_range).group(0)[:-1]+"0"
+      count = cells[2].get_text().strip().replace(",","")
+      if decade in deaths_by_age_decade:
+        deaths_by_age_decade[decade] += int(count)
+      else:
+        deaths_by_age_decade[decade] = int(count)
   return deaths_by_age_decade
 
 @app.route("/spreadsheet")
