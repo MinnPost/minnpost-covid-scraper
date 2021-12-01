@@ -87,6 +87,8 @@ def scrape_full_test_history():
 
   for row in rows[2:]: #skip header row and first row of data
     cells = row.find_all("td")
+    if cells[0].get_text().strip() == "Unknown/missing": #Ignore the unknown/missing row for test date table
+      continue
     raw_date = cells[0].get_text().strip().split("/")
     month = raw_date[0]
     day = raw_date[1]
