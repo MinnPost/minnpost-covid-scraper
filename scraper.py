@@ -82,9 +82,6 @@ def scrape_full_test_history():
   rows = test_history_table.find_all("tr")
   previous_day_total = int(rows[1].find_all("td")[-1].get_text().strip().replace(",",""))
 
-  year = 2020
-  year_incremented = False
-
   for row in rows[2:]: #skip header row and first row of data
     cells = row.find_all("td")
     if cells[0].get_text().strip() == "Unknown/missing": #Ignore the unknown/missing row for test date table
@@ -92,12 +89,9 @@ def scrape_full_test_history():
     raw_date = cells[0].get_text().strip().split("/")
     month = raw_date[0]
     day = raw_date[1]
+    year = "20" + raw_date[2]
 
-    if month == "1":
-      year = 2021
-      year_incremented = True
-
-    data_received_date = datetime.date(year=year, month=int(month), day=int(day))
+    data_received_date = datetime.date(year=int(year), month=int(month), day=int(day))
     data_reported_date = data_received_date + datetime.timedelta(days=1)
 
     formatted_date = "{}-{}-{}".format(data_reported_date.year, data_reported_date.month, data_reported_date.day)
