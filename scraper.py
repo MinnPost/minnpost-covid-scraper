@@ -15,11 +15,11 @@ def APify(num_string):
   return num_string
 
 def get_daily_change(column_name, today_data):
-  r = requests.get("https://spreadsheets.google.com/feeds/list/121YfyOnxak30lhjdVZCaIE40LBZdamIT1nxev8z3Ck4/1/public/full?alt=json")
-  data = r.json()["feed"]["entry"]
-  previous_total = int(data[-1][column_name]['$t'])
+  r = requests.get("https://minnpost-google-sheet-to-json.herokuapp.com/parser/?spreadsheet_id=121YfyOnxak30lhjdVZCaIE40LBZdamIT1nxev8z3Ck4&worksheet_names=daily")
+  data = r.json()["daily"]
+  previous_total = int(data[-1][column_name])
   if  previous_total == today_data:
-    previous_total = int(data[-2][column_name]['$t']) #use previous row if current row equals today (spreadsheet already up to date)
+    previous_total = int(data[-2][column_name]) #use previous row if current row equals today (spreadsheet already up to date)
   return today_data - previous_total
 
 def scrape_spreadsheet_row():
@@ -60,10 +60,10 @@ def scrape_spreadsheet_row():
   total_tests = int(cells[0].get_text().strip().replace(",",""))
 
   #new cases
-  new_cases = get_daily_change("gsx$totalcases", total_cases)
+  new_cases = get_daily_change("totalcases", total_cases)
 
   #new tests
-  new_tests = get_daily_change("gsx$tests-total", total_tests)
+  new_tests = get_daily_change("tests-total", total_tests)
 
   #date and time
   date = datetime.datetime.now().strftime("%-m/%-d/%Y")
