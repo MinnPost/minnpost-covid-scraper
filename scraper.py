@@ -73,40 +73,7 @@ def scrape_spreadsheet_row():
 
   return {"total_cases": total_cases, "new_deaths": new_deaths, "new_ltc_deaths": new_ltc_deaths, "total_deaths": total_deaths, "total_tests": total_tests, "new_cases": new_cases, "new_tests": new_tests, "date": date, "time": time}
 
-# no longer reported
-#def scrape_full_test_history():
-#  r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
-#  text = r.text
-#  soup = BeautifulSoup(text, "html.parser")
-
-#  new_tests_by_day = []
-
-#  test_history_table = soup.find(id="labtable")
-#  rows = test_history_table.find_all("tr")
-#  previous_day_total = int(rows[1].find_all("td")[-1].get_text().strip().replace(",",""))
-
-#  for row in rows[2:]: #skip header row and first row of data
-#    cells = row.find_all("td")
-#    if cells[0].get_text().strip() == "Unknown/missing": #Ignore the unknown/missing row for test date table
-#      continue
-#    raw_date = cells[0].get_text().strip().split("/")
-#    month = raw_date[0]
-#    day = raw_date[1]
-#    year = "20" + raw_date[2]
-
-#    data_received_date = datetime.date(year=int(year), month=int(month), day=int(day))
-#    data_reported_date = data_received_date + datetime.timedelta(days=1)
-
-#    formatted_date = "{}-{}-{}".format(data_reported_date.year, data_reported_date.month, data_reported_date.day)
-    
-#    total_tests = int(cells[-1].get_text().strip().replace(",",""))
-#    new_tests = total_tests - previous_day_total
-
-#    previous_day_total = total_tests
-
-#    new_tests_by_day.append([formatted_date, new_tests])
-
-#  return new_tests_by_day
+# scrape_full_test_history is no longer reported; removed it
 
 def scrape_daily_county_totals():
   r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
@@ -180,9 +147,7 @@ def scrape_death_ages():
 def spreadsheet_row():
   return render_template("spreadsheet-row.html", data = scrape_spreadsheet_row())
 
-#@app.route("/daily-test-data")
-#def daily_test_data():
-#  return json.dumps(scrape_full_test_history())
+# test data no longer reported; removed daily-test-data route
 
 @app.route("/county-data")
 def get_county_data():
