@@ -54,16 +54,18 @@ def scrape_spreadsheet_row():
   rows = death_table.find_all("tr")
   total_deaths = int(rows[0].find_all("td")[0].get_text().strip().replace(",", ""))
 
-  #total tests
-  testtotal_table = soup.find(id="testtotal")
-  cells = testtotal_table.find_all("td")
-  total_tests = int(cells[0].get_text().strip().replace(",",""))
+  #total tests - no longer reported
+  #testtotal_table = soup.find(id="testtotal")
+  #cells = testtotal_table.find_all("td")
+  #total_tests = int(cells[0].get_text().strip().replace(",",""))
+  total_tests = ""
 
   #new cases
   new_cases = get_daily_change("totalcases", total_cases)
 
-  #new tests
-  new_tests = get_daily_change("tests-total", total_tests)
+  #new tests - no longer reported
+  #new_tests = get_daily_change("tests-total", total_tests)
+  new_tests = ""
 
   #date and time
   date = datetime.datetime.now().strftime("%-m/%-d/%Y")
@@ -71,39 +73,40 @@ def scrape_spreadsheet_row():
 
   return {"total_cases": total_cases, "new_deaths": new_deaths, "new_ltc_deaths": new_ltc_deaths, "total_deaths": total_deaths, "total_tests": total_tests, "new_cases": new_cases, "new_tests": new_tests, "date": date, "time": time}
 
-def scrape_full_test_history():
-  r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
-  text = r.text
-  soup = BeautifulSoup(text, "html.parser")
+# no longer reported
+#def scrape_full_test_history():
+#  r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
+#  text = r.text
+#  soup = BeautifulSoup(text, "html.parser")
 
-  new_tests_by_day = []
+#  new_tests_by_day = []
 
-  test_history_table = soup.find(id="labtable")
-  rows = test_history_table.find_all("tr")
-  previous_day_total = int(rows[1].find_all("td")[-1].get_text().strip().replace(",",""))
+#  test_history_table = soup.find(id="labtable")
+#  rows = test_history_table.find_all("tr")
+#  previous_day_total = int(rows[1].find_all("td")[-1].get_text().strip().replace(",",""))
 
-  for row in rows[2:]: #skip header row and first row of data
-    cells = row.find_all("td")
-    if cells[0].get_text().strip() == "Unknown/missing": #Ignore the unknown/missing row for test date table
-      continue
-    raw_date = cells[0].get_text().strip().split("/")
-    month = raw_date[0]
-    day = raw_date[1]
-    year = "20" + raw_date[2]
+#  for row in rows[2:]: #skip header row and first row of data
+#    cells = row.find_all("td")
+#    if cells[0].get_text().strip() == "Unknown/missing": #Ignore the unknown/missing row for test date table
+#      continue
+#    raw_date = cells[0].get_text().strip().split("/")
+#    month = raw_date[0]
+#    day = raw_date[1]
+#    year = "20" + raw_date[2]
 
-    data_received_date = datetime.date(year=int(year), month=int(month), day=int(day))
-    data_reported_date = data_received_date + datetime.timedelta(days=1)
+#    data_received_date = datetime.date(year=int(year), month=int(month), day=int(day))
+#    data_reported_date = data_received_date + datetime.timedelta(days=1)
 
-    formatted_date = "{}-{}-{}".format(data_reported_date.year, data_reported_date.month, data_reported_date.day)
+#    formatted_date = "{}-{}-{}".format(data_reported_date.year, data_reported_date.month, data_reported_date.day)
     
-    total_tests = int(cells[-1].get_text().strip().replace(",",""))
-    new_tests = total_tests - previous_day_total
+#    total_tests = int(cells[-1].get_text().strip().replace(",",""))
+#    new_tests = total_tests - previous_day_total
 
-    previous_day_total = total_tests
+#    previous_day_total = total_tests
 
-    new_tests_by_day.append([formatted_date, new_tests])
+#    new_tests_by_day.append([formatted_date, new_tests])
 
-  return new_tests_by_day
+#  return new_tests_by_day
 
 def scrape_daily_county_totals():
   r = requests.get("https://www.health.state.mn.us/diseases/coronavirus/situation.html")
@@ -177,9 +180,9 @@ def scrape_death_ages():
 def spreadsheet_row():
   return render_template("spreadsheet-row.html", data = scrape_spreadsheet_row())
 
-@app.route("/daily-test-data")
-def daily_test_data():
-  return json.dumps(scrape_full_test_history())
+#@app.route("/daily-test-data")
+#def daily_test_data():
+#  return json.dumps(scrape_full_test_history())
 
 @app.route("/county-data")
 def get_county_data():
@@ -188,7 +191,7 @@ def get_county_data():
 @app.route("/daily-update")
 def daily_update():
   data = scrape_spreadsheet_row()
-  data["new_tests"] = scrape_full_test_history()[-1][1]
+  data["new_tests"] = "" # no longer reported
   data["date"] = datetime.datetime.now().strftime("%B %-d")
   data["day_of_week"] = datetime.datetime.now().strftime("%A")
   yesterday = datetime.date.today() - datetime.timedelta(days=1)
